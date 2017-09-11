@@ -1,0 +1,15 @@
+---
+title: "data_science_project"
+output: html_document
+---
+
+```{r}
+install.packages("rvest")
+library(rvest)
+url <- 'https://www.indeed.com/jobs?q=data%20scientist&l'
+webpage <- read_html(url)
+skill <- html_nodes(webpage,'data analytics software ')
+skill2 <- html_text(skill)
+head(skill2)
+```
+
