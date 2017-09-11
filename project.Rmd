@@ -1,7 +1,13 @@
 ---
 title: "project"
+name: Feiyang Zheng
 output: html_document
 ---
-#1. I am very interested in performing an analysis of “data scientist” jobs listed on job boards and on the employment pages of major companies.
-#2. I would do an inferential analysis, which aims to understand the most popular techniques required by employers.
-#3. I am still thinking about how to collect data needed. Maybe I will try to check several websites such as indeed.
+###1.I plan to perform an analysis of “data scientist” jobs listed on job boards and on the employment pages of major companies.
+###2.I would do web scraping on several popular job positing websites including [indeed](https://www.indeed.com) and [LinkedIn](https://www.linkedin.com/error_pages/unsupported-browser.html).
+###3. Data will be cleaned and displayed using tables. I would also extract extra information career fields (IT, Business, research...), and probably geographic locations.
+###4. Skills will be ranked and visualized. 
+###5. Hopefully, this could provide job seekers with some basic ideas about skills that they are expected to have in their dream career fields.
+
+
+
