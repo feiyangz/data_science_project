@@ -4,12 +4,48 @@ output: html_document
 ---
 
 ```{r}
-install.packages("rvest")
 library(rvest)
-url <- 'https://www.indeed.com/jobs?q=data%20scientist&l'
+library(stringr)
+library(dplyr)
+library(ggplot2)
+library(data.table)
+
+url <- "https://www.indeed.com/jobs?q=data%20scientist&from=googlesl"
 webpage <- read_html(url)
-skill <- html_nodes(webpage,'data analytics software ')
-skill2 <- html_text(skill)
-head(skill2)
+
+
+company <-webpage%>%html_nodes(".company")%>%html_text()
+skill <-webpage%>%html_nodes(".experienceList")%>%html_text()
+location <- webpage%>%html_nodes(".location")%>%html_text()
+webpage_table<- data.frame(company,skill,location)
+
+
+company <- lapply(paste0("https://www.indeed.com/jobs?q=data%20scientist&from=googlesl", 1:5),
+                function(url){
+                    url %>% read_html() %>% 
+                        html_nodes(".company") %>% 
+                        html_text()
+ })
+
+
+skill <- lapply(paste0("https://www.indeed.com/jobs?q=data%20scientist&from=googlesl", 1:5),
+                function(url){
+                    url %>% read_html() %>% 
+                        html_nodes(".experienceList") %>% 
+                        html_text()
+ })
+
+location <- lapply(paste0("https://www.indeed.com/jobs?q=data%20scientist&from=googlesl", 1:5),
+                function(url){
+                    url %>% read_html() %>% 
+                        html_nodes(".location") %>% 
+                        html_text()
+ })
+
+webpage_table<- data.frame(company,location)
+
+
 ```
+
+
 
