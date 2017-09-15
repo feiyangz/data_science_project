@@ -10,41 +10,42 @@ library(dplyr)
 library(ggplot2)
 library(data.table)
 
-url <- "https://www.indeed.com/jobs?q=data%20scientist&from=googlesl"
+url <- "https://www.indeed.com/jobs?q=data+scientist"
 webpage <- read_html(url)
 
 
-company <-webpage%>%html_nodes(".company")%>%html_text()
-skill <-webpage%>%html_nodes(".experienceList")%>%html_text()
-location <- webpage%>%html_nodes(".location")%>%html_text()
-webpage_table<- data.frame(company,skill,location)
+#company <-webpage%>%html_nodes(".company")%>%html_text()
+#skill <-webpage%>%html_nodes(".experienceList")%>%html_text()
+#location <- webpage%>%html_nodes(".location")%>%html_text()
+#webpage_table<- data.frame(company,skill,location)
 
-
-company <- lapply(paste0("https://www.indeed.com/jobs?q=data%20scientist&from=googlesl", 1:5),
+#For jobs at all levels
+company <- lapply(paste0("https://www.indeed.com/jobs?q=data+scientist", 1:3),
                 function(url){
                     url %>% read_html() %>% 
                         html_nodes(".company") %>% 
                         html_text()
  })
 
+company1=unlist(company, recursive = FALSE)
 
-skill <- lapply(paste0("https://www.indeed.com/jobs?q=data%20scientist&from=googlesl", 1:5),
+skill <- lapply(paste0("https://www.indeed.com/jobs?q=data+scientist", 1:3),
                 function(url){
                     url %>% read_html() %>% 
                         html_nodes(".experienceList") %>% 
                         html_text()
  })
 
-location <- lapply(paste0("https://www.indeed.com/jobs?q=data%20scientist&from=googlesl", 1:5),
+skill1=unlist(skill, recursive = FALSE)
+
+location <- lapply(paste0("https://www.indeed.com/jobs?q=data+scientist", 1:3),
                 function(url){
                     url %>% read_html() %>% 
                         html_nodes(".location") %>% 
                         html_text()
  })
-
-webpage_table<- data.frame(company,location)
-
-
+location1=unlist(location, recursive = FALSE)
+data=data.frame(company1,skill1,location1)
 ```
 
 
