@@ -8,64 +8,80 @@ library(rvest)
 library(stringr)
 library(dplyr)
 library(ggplot2)
-library(data.table)
-#find the website of data scientist positions in the united states from the indeed website
-query = "data scientist"
-l="United States"
-session <- html_session("http://www.indeed.com")
-form <- html_form(session)[[1]]
-form <- set_values(form, q = query, l=l)
-
-session1 <- submit_form(session, form)
-
-url <- "https://www.indeed.com/q-data-scientist-jobs.html"
-page <-read_html(url) 
-
-#company <-webpage%>%html_nodes(".company")%>%html_text()
-#skill <-webpage%>%html_nodes(".experienceList")%>%html_text()
-#location <- webpage%>%html_nodes(".location")%>%html_text()
-#webpage_table<- data.frame(company,skill,location)
 
 
-#For jobs at all levels
+#find the website of data scientist positions in the united states from the data jobs
 
-company <- lapply(paste0("https://www.indeed.com/jobs?q=data+scientist1&start=", c(10,20,30)),
-                function(url){
+Basic.url <- "https://datajobs.com/Data-Science-Jobs"
+url.1 <-paste0("https://datajobs.com/Data-Science-Jobs","~",1:50)
+start.page <-read_html(Basic.url) 
+#count pages we have (by search for "next page")
+res.2 <- sapply(url.1, function(x) {
+  desc.2 <- x %>% read_html() %>% html_nodes("div:nth-child(26)") %>% html_text()
+NEXT <- any(grepl("\\NEXT\\b", desc.2, ignore.case=TRUE))
+})
+Page.num <- length(which(res.2==TRUE))+1
+url <-paste0("https://datajobs.com/Data-Science-Jobs","~",1:Page.num)
+
+
+#company
+company <- lapply(url,
+             function(url){
                     url %>% read_html() %>% 
-                        html_nodes(".company") %>% 
+                        html_nodes("a .stealth-header") %>% 
                         html_text()
  })
-
 company1=unlist(company, recursive = FALSE)
 
-skill <- lapply(paste0("https://www.indeed.com/jobs?q=data+scientist1&start=", c(10,20,30,40,50)),
-                function(url){
+#location
+location <- lapply(url,
+             function(url){
                     url %>% read_html() %>% 
-                        html_nodes(xpath='//*[contains(concat( " ", @class, " " ), concat( " ", "experienceList", " " ))]') %>% 
-                        html_text()
- })
-
-skill1=unlist(skill, recursive = FALSE)
-
-location <- lapply(paste0("https://www.indeed.com/jobs?q=data+scientist1&start=", c("",paste0("~",c(seq(10,100,by=10))))),
-                function(url){
-                    url %>% read_html() %>% 
-                        html_nodes(".location") %>% 
+                        html_nodes("em .stealth-header") %>% 
                         html_text()
  })
 location1=unlist(location, recursive = FALSE)
-data=data.frame(company1,skill1,location1)
+
+#single job URL for all the pages
+page.links <- lapply(url,
+              function(url){
+                url %>%read_html() %>%
+  html_nodes(xpath = '//div[contains(concat( " ", @class, " " ), concat( " ", "stealth-header", " " ))]//a') %>%
+  html_attr('href')
+  })
+page.links1 <- unlist(page.links, recursive = FALSE)
+job.urls <-lapply(page.links1, function(x) paste0("https://datajobs.com/", x))
+job.urls1 <- unlist(job.urls, recursive = FALSE)
+
+#skills(python,R,SAS,SQL,Java,Tableau,Spark,C++,Perl,Excel)
+res <- sapply(job.urls1, function(x) {
+  desc <- x %>% read_html() %>% html_nodes("#job_description .jobpost-table-cell-2 , #job_description .jobpost-table-cell-2 strong") %>% html_text()
+  Python <- any(grepl("python", desc, ignore.case=TRUE))
+  R <- any(grepl("\\bR\\b", desc, ignore.case=TRUE))
+  SAS <- any(grepl("\\bSAS\\b", desc, ignore.case=TRUE))
+  SQL <- any(grepl("\\bSQL\\b", desc, ignore.case=TRUE))
+  Java <- any(grepl("\\bJava\\b", desc, ignore.case=TRUE))
+  Tableau <- any(grepl("\\bTableau\\b", desc, ignore.case=TRUE))
+  Spark <- any(grepl("\\bSpark\\b", desc, ignore.case=TRUE))
+   C<- any(grepl("\\bC\\b", desc, ignore.case=TRUE))
+   Perl <- any(grepl("\\bPerl\\b", desc, ignore.case=TRUE))
+   Excel <- any(grepl("\\bExcel\\b", desc, ignore.case=TRUE))
+ 
+   # info <- paste0(x %>% read_html() %>% html_nodes(xpath='//*[contains(concat( " ", @class, " " ), concat( " ", "-key", " " ))]') %>% html_text(),
+                # x %>% read_html() %>% html_nodes(xpath='//*[contains(concat( " ", #@class, " " ), concat( " ", "-value", " " ))]') %>% html_text())
+#  ind <- grep("Industry", info)
+ # sector <- ifelse(length(ind) == 0, NA, gsub("Industry: ", "", info[grep("Industry", info)]))
+  
+c(Python=Python, R=R,SAS=SAS,SQL=SQL,Java=Java,Tableau=Tableau,Spark=Spark,C=C,Perl=Perl,Excel=Excel)
+})
+res <- unname(res)
+
+
+data <- data.frame("Company" = company1, "Location"=location1, "Python"=res[1,], "R"=res[2,], "SAS"=res[3,],"SQL"=res[4,],"Java"=res[5,],"Tableau"=res[6,],"Spark"=res[7,],"C"=res[8,],"Perl"=res[9,],"Excel"=res[10,],"Website"=job.urls1)
 
 
 ```
 
-```{r}
-pages = paste0("data-science-jobs",c("",paste0("~",2:30)))
-https://www.indeed.com/q-data-scientist-jobs.html
-https://www.indeed.com/jobs?q=data+scientist1&start=10
-
-
-```
 
 
 
@@ -76,49 +92,7 @@ https://www.indeed.com/jobs?q=data+scientist1&start=10
 
 
 
-```{r}
-# Submit the form on indeed.com for a job description and location using html_form() and set_values()
-query = "data scientist"
-l="United States"
-session <- html_session("http://www.indeed.com")
-form <- html_form(session)[[1]]
-form <- set_values(form, q = query, l=l)
 
 
-session1 <- submit_form(session, form)
-
-
-
-salary_links <- html_nodes(session1, css = "#resultsCol li:nth-child(2) a") %>% html_attr("href")
-salary_links <- paste(session$url, salary_links, sep='')
-salaries <- lapply(salary_links, . %>% html() %>% html_nodes("#salary_display_table .salary") %>% html_text())
-salary <- unlist(salaries)
-
-# Store web url
-data_sci_indeed <- session1
-
-# Get job titles
-job_title <- data_sci_indeed %>% 
-  html_nodes("[itemprop=title]") %>%
-  html_text()
-
-# Get companies
-company <- data_sci_indeed %>%
-  html_nodes("[itemprop=hiringOrganization]") %>%
-  html_text()
-
-# Get locations
-location <- data_sci_indeed %>%
-  html_nodes("[itemprop=addressLocality]") %>%
-  html_text()
-
-# Get descriptions
-description <- data_sci_indeed %>% html_nodes(xpath='//*[contains(concat( " ", @class, " " ), concat( " ", "experienceList", " " ))]') %>% html_text()
-
-indeed_jobs <- data.frame(job_title,company,location,description,salary)
-
-library(knitr)
-kable(indeed_jobs, format = "html")
-```
 
 
