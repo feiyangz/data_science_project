@@ -1,15 +1,95 @@
 ---
 title: "data_science_project"
-output: html_document
+output:
+  html_document: default
+  word_document: default
 ---
-
 ```{r}
+#glassdoor
+#find the website of data scientist positions in the united states from glassdoor
 library(rvest)
 library(stringr)
 library(dplyr)
 library(ggplot2)
 
+company <- rep(NA, 100000)
+location <- rep(NA, 100000)
+industry <- rep(NA, 100000)
+Python<-rep(NA, 100000)
+R<-rep(NA, 100000)
+SAS<-rep(NA, 100000)
+SQL<-rep(NA, 100000)
+Java<-rep(NA,100000)
+Tableau<-rep(NA, 100000)
+Spark<-rep(NA, 100000)
+C<-rep(NA, 100000)
+Perl<-rep(NA, 100000)
+Excel<-rep(NA, 100000)
 
+Basic.url <- "https://www.glassdoor.com/Job/data-scientist-jobs-SRCH_KO0,14.htm"
+
+start.page <-read_html(Basic.url) 
+# count total pages
+page_count <- unlist(strsplit(start.page %>% 
+                               html_node(".padVertSm") %>%
+                               html_text(), split = ' ')) 
+page_count <- as.numeric(str_replace_all(page_count[length(page_count)],',',''))
+cat('Total page count: ', page_count)
+urls <-paste0("https://www.glassdoor.com/Job/data-scientist-jobs-SRCH_KO0,14_IP", 1:page_count, ".htm")
+#we have 892 pages total
+
+#In this project, I will only collect data from the first 200 pages.
+url.1<- paste0("https://www.glassdoor.com/Job/data-scientist-jobs-SRCH_KO0,14_IP", 1:200, ".htm")
+
+#get each sub urls
+
+subpage.2 <- lapply(url.1, function(url.1) {
+  fields <- url.1 %>% read_html() %>% html_nodes(xpath='//*[contains(concat( " ", @class, " " ), concat( " ", "jl", " " ))]')
+ job.urls <- fields%>% html_nodes("a.jobLink") %>% html_attr("href")
+ job.urls <-job.urls[c(seq(1,60,by=2))]
+job.urls = unique(paste('https://www.glassdoor.com', job.urls, sep = ''))
+}
+)
+subpage=unlist(subpage.2,recursive = FALSE)
+
+#collect company name, location sector and techniques(Python,R,SAS,SQL,Java,Tableau,Spark,C++,Perl,Excel)
+for(j in 1:length(subpage)){
+    subpage.1=subpage[j]
+    job <- html_session(subpage.1)
+      company[j] <- job %>%read_html() %>% html_node(".padRtSm") %>% html_text()
+      location[j]<- job %>% html_node(".subtle") %>% html_text()
+  desc.1 <-subpage.1 %>% readLines(warn=FALSE)
+    industry.1<- desc.1[str_detect(desc.1, "\'sector\'")] %>%
+      str_extract("\"(.*)\"") %>% str_sub(2, -2)
+    industry.1=unlist(industry.1,recursive = FALSE) 
+  industry.1=ifelse(length(industry.1)==0,NA,industry.1)
+    industry[j]=industry.1
+desc <- job %>% read_html() %>% html_nodes("#JobDescContainer") %>% html_text() 
+  Python[j] <- any(grepl("python", desc, ignore.case=TRUE))
+  R[j] <- any(grepl("\\bR\\b", desc, ignore.case=TRUE))
+  SAS[j] <- any(grepl("\\bSAS\\b", desc, ignore.case=TRUE))
+  SQL[j]<- any(grepl("\\bSQL\\b", desc, ignore.case=TRUE))
+  Java[j] <- any(grepl("\\bJava\\b", desc, ignore.case=TRUE))
+  Tableau[j] <- any(grepl("\\bTableau\\b", desc, ignore.case=TRUE))
+  Spark[j] <- any(grepl("\\bSpark\\b", desc, ignore.case=TRUE))
+   C[j]<- any(grepl("\\bC\\b", desc, ignore.case=TRUE))
+   Perl[j] <- any(grepl("\\bPerl\\b", desc, ignore.case=TRUE))
+   Excel[j] <- any(grepl("\\bExcel\\b", desc, ignore.case=TRUE))
+}
+location<-str_sub(location,-2,-1)
+
+data <- data.frame("Company" = company, "Location"=location, "Industry"=industry, "Python"=Python, "R"=R,"SAS"=SAS,"SQL"=SQL,"Java"=Java,"Tableau"=Tableau,"Spark"=Spark,"C"=C,"Perl"=Perl,"Excel"=Excel)
+data <-data[c(1:length(subpage)),]
+data$Website<-subpage
+
+```
+
+
+
+
+
+
+```{r}
 #find the website of data scientist positions in the united states from the data jobs
 
 Basic.url <- "https://datajobs.com/Data-Science-Jobs"
@@ -18,7 +98,7 @@ start.page <-read_html(Basic.url)
 #count pages we have (by search for "next page")
 res.2 <- sapply(url.1, function(x) {
   desc.2 <- x %>% read_html() %>% html_nodes("div:nth-child(26)") %>% html_text()
-NEXT <- any(grepl("\\NEXT\\b", desc.2, ignore.case=TRUE))
+  NEXT <- any(grepl("\\NEXT\\b", desc.2, ignore.case=TRUE))
 })
 Page.num <- length(which(res.2==TRUE))+1
 url <-paste0("https://datajobs.com/Data-Science-Jobs","~",1:Page.num)
@@ -26,29 +106,29 @@ url <-paste0("https://datajobs.com/Data-Science-Jobs","~",1:Page.num)
 
 #company
 company <- lapply(url,
-             function(url){
+                  function(url){
                     url %>% read_html() %>% 
-                        html_nodes("a .stealth-header") %>% 
-                        html_text()
- })
+                      html_nodes("a .stealth-header") %>% 
+                      html_text()
+                  })
 company1=unlist(company, recursive = FALSE)
 
 #location
 location <- lapply(url,
-             function(url){
-                    url %>% read_html() %>% 
-                        html_nodes("em .stealth-header") %>% 
-                        html_text()
- })
+                   function(url){
+                     url %>% read_html() %>% 
+                       html_nodes("em .stealth-header") %>% 
+                       html_text()
+                   })
 location1=unlist(location, recursive = FALSE)
 
 #single job URL for all the pages
 page.links <- lapply(url,
-              function(url){
-                url %>%read_html() %>%
-  html_nodes(xpath = '//div[contains(concat( " ", @class, " " ), concat( " ", "stealth-header", " " ))]//a') %>%
-  html_attr('href')
-  })
+                     function(url){
+                       url %>%read_html() %>%
+                         html_nodes(xpath = '//div[contains(concat( " ", @class, " " ), concat( " ", "stealth-header", " " ))]//a') %>%
+                         html_attr('href')
+                     })
 page.links1 <- unlist(page.links, recursive = FALSE)
 job.urls <-lapply(page.links1, function(x) paste0("https://datajobs.com/", x))
 job.urls1 <- unlist(job.urls, recursive = FALSE)
@@ -63,16 +143,16 @@ res <- sapply(job.urls1, function(x) {
   Java <- any(grepl("\\bJava\\b", desc, ignore.case=TRUE))
   Tableau <- any(grepl("\\bTableau\\b", desc, ignore.case=TRUE))
   Spark <- any(grepl("\\bSpark\\b", desc, ignore.case=TRUE))
-   C<- any(grepl("\\bC\\b", desc, ignore.case=TRUE))
-   Perl <- any(grepl("\\bPerl\\b", desc, ignore.case=TRUE))
-   Excel <- any(grepl("\\bExcel\\b", desc, ignore.case=TRUE))
- 
-   # info <- paste0(x %>% read_html() %>% html_nodes(xpath='//*[contains(concat( " ", @class, " " ), concat( " ", "-key", " " ))]') %>% html_text(),
-                # x %>% read_html() %>% html_nodes(xpath='//*[contains(concat( " ", #@class, " " ), concat( " ", "-value", " " ))]') %>% html_text())
-#  ind <- grep("Industry", info)
- # sector <- ifelse(length(ind) == 0, NA, gsub("Industry: ", "", info[grep("Industry", info)]))
+  C<- any(grepl("\\bC\\b", desc, ignore.case=TRUE))
+  Perl <- any(grepl("\\bPerl\\b", desc, ignore.case=TRUE))
+  Excel <- any(grepl("\\bExcel\\b", desc, ignore.case=TRUE))
   
-c(Python=Python, R=R,SAS=SAS,SQL=SQL,Java=Java,Tableau=Tableau,Spark=Spark,C=C,Perl=Perl,Excel=Excel)
+  # info <- paste0(x %>% read_html() %>% html_nodes(xpath='//*[contains(concat( " ", @class, " " ), concat( " ", "-key", " " ))]') %>% html_text(),
+  # x %>% read_html() %>% html_nodes(xpath='//*[contains(concat( " ", #@class, " " ), concat( " ", "-value", " " ))]') %>% html_text())
+  #  ind <- grep("Industry", info)
+  # sector <- ifelse(length(ind) == 0, NA, gsub("Industry: ", "", info[grep("Industry", info)]))
+  
+  c(Python=Python, R=R,SAS=SAS,SQL=SQL,Java=Java,Tableau=Tableau,Spark=Spark,C=C,Perl=Perl,Excel=Excel)
 })
 res <- unname(res)
 
@@ -81,77 +161,7 @@ data <- data.frame("Company" = company1, "Location"=location1, "Python"=res[1,],
 
 
 ```
-
-
-
-```{r}
-#glassdoor
-#find the website of data scientist positions in the united states from glassdoor
-
-company <- rep(NA, 1000)
-location <- rep(NA, 1000)
-industry <- rep(NA, 1000)
-Python<-rep(NA, 1000)
-R<-rep(NA, 1000)
-SAS<-rep(NA, 1000)
-SQL<-rep(NA, 1000)
-Java<-rep(NA,1000)
-Tableau<-rep(NA, 1000)
-Spark<-rep(NA, 1000)
-C<-rep(NA, 1000)
-Perl<-rep(NA, 1000)
-Excel<-rep(NA, 1000)
-
-
-Basic.url <- "https://www.glassdoor.com/Job/data-scientist-jobs-SRCH_KO0,14.htm"
-url.1 <-paste0("https://www.glassdoor.com/Job/data-scientist-jobs-SRCH_KO0,14_IP", 1:3, ".htm")
-start.page <-read_html(Basic.url) 
-# count total pages
-page_count <- unlist(strsplit(start.page %>% 
-                               html_node(".padVertSm") %>%
-                               html_text(), split = ' ')) 
-page_count <- as.numeric(str_replace_all(page_count[length(page_count)],',',''))
-cat('Total page count: ', page_count)
-urls <-paste0("https://www.glassdoor.com/Job/data-scientist-jobs-SRCH_KO0,14_IP", 1:page_count, ".htm")
-
-#get each sub urls
-
-subpage <- lapply(url.1, function(url.1) {
-  fields <- url.1 %>% read_html() %>% html_nodes(xpath='//*[contains(concat( " ", @class, " " ), concat( " ", "jl", " " ))]')
- job.urls <- fields%>% html_nodes("a.jobLink") %>% html_attr("href")
- job.urls <-job.urls[c(seq(1,60,by=2))]
-job.urls = unique(paste('www.glassdoor.com', job.urls, sep = ''))
-}
-)
- subpage= unlist(subpage, recursive = FALSE)
-
- #collect company name, location and sector, technique(Python,R,SAS,SQL,Java,Tableau,Spark,C++,Perl,Excel)
-for(j in 1:length(subpage)){
-    subpage.1=subpage[j]
-    job <- html_session(subpage.1)
-      company[j] <- job %>%read_html() %>% html_node(".padRtSm") %>% html_text()
-      location[j]<- job %>% html_node(".subtle") %>% html_text()
-      
-  desc <- job %>% read_html() %>% html_nodes("#JobDescContainer") %>% html_text() 
-      Python[j] <- any(grepl("python", desc, ignore.case=TRUE))
-  R[j] <- any(grepl("\\bR\\b", desc, ignore.case=TRUE))
-  SAS[j] <- any(grepl("\\bSAS\\b", desc, ignore.case=TRUE))
-  SQL[j]<- any(grepl("\\bSQL\\b", desc, ignore.case=TRUE))
-  Java[j] <- any(grepl("\\bJava\\b", desc, ignore.case=TRUE))
-  Tableau[j] <- any(grepl("\\bTableau\\b", desc, ignore.case=TRUE))
-  Spark[j] <- any(grepl("\\bSpark\\b", desc, ignore.case=TRUE))
-   C[j]<- any(grepl("\\bC\\b", desc, ignore.case=TRUE))
-   Perl[j] <- any(grepl("\\bPerl\\b", desc, ignore.case=TRUE))
-   Excel[j] <- any(grepl("\\bExcel\\b", desc, ignore.case=TRUE))
-}
-location<-str_sub(location,-2,-1)
- data <- data.frame("Company" = company, "Location"=location, "Python"=Python, "R"=R,"SAS"=SAS,"SQL"=SQL,"Java"=Java,"Tableau"=Tableau,"Spark"=Spark,"C"=C,"Perl"=Perl,"Excel"=Excel)
-data <-data[c(1:length(subpage)),]
-data$Website<-subpage
-
 ```
-
-
 
 
 
