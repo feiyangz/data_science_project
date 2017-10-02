@@ -11,20 +11,7 @@ library(rvest)
 library(stringr)
 library(dplyr)
 library(ggplot2)
-
-company <- rep(NA, 100000)
-location <- rep(NA, 100000)
-industry <- rep(NA, 100000)
-Python<-rep(NA, 100000)
-R<-rep(NA, 100000)
-SAS<-rep(NA, 100000)
-SQL<-rep(NA, 100000)
-Java<-rep(NA,100000)
-Tableau<-rep(NA, 100000)
-Spark<-rep(NA, 100000)
-C<-rep(NA, 100000)
-Perl<-rep(NA, 100000)
-Excel<-rep(NA, 100000)
+library(httr)
 
 Basic.url <- "https://www.glassdoor.com/Job/data-scientist-jobs-SRCH_KO0,14.htm"
 
@@ -38,33 +25,66 @@ cat('Total page count: ', page_count)
 urls <-paste0("https://www.glassdoor.com/Job/data-scientist-jobs-SRCH_KO0,14_IP", 1:page_count, ".htm")
 #we have 892 pages total
 
-#In this project, I will only collect data from the first 200 pages.
-url.1<- paste0("https://www.glassdoor.com/Job/data-scientist-jobs-SRCH_KO0,14_IP", 1:200, ".htm")
-
+#In this project, I will only collect data from the first 100 pages.
+url.1<- paste0("https://www.glassdoor.com/Job/data-scientist-jobs-SRCH_KO0,14_IP", 1:35, ".htm")
 #get each sub urls
-
-subpage.2 <- lapply(url.1, function(url.1) {
-  fields <- url.1 %>% read_html() %>% html_nodes(xpath='//*[contains(concat( " ", @class, " " ), concat( " ", "jl", " " ))]')
- job.urls <- fields%>% html_nodes("a.jobLink") %>% html_attr("href")
- job.urls <-job.urls[c(seq(1,60,by=2))]
-job.urls = unique(paste('https://www.glassdoor.com', job.urls, sep = ''))
+subpage<- rep(NA,10000)
+ k=0
+for (i in 1:length(url.1)){
+  url.2=url.1[i]
+   fields <- url.2 %>% read_html() %>% html_nodes(xpath='//*[contains(concat( " ", @class, " " ), concat( " ", "jl", " " ))]')
+    job.urls.1 <- fields%>% html_nodes("a.jobLink") %>% html_attr("href")
+    job.urls.1 <-job.urls.1[c(seq(1,60,by=2))]
+    job.urls<- unique(paste('https://www.glassdoor.com', job.urls.1, sep = ''))
+    subpage.2=unlist(job.urls,recursive = FALSE)
+    subpage[(k+1):(k+length(subpage.2))]=subpage.2
+    k=k+30
+    Sys.sleep(1)
 }
-)
-subpage=unlist(subpage.2,recursive = FALSE)
+subpage<- ifelse(grepl("NA",subpage)==TRUE,NA,subpage) 
+subpage<-subpage[!is.na(subpage)]
+l=length(subpage)
+company <- rep(NA, l)
+location <- rep(NA, l)
+industry <- rep(NA, l)
+Python<-rep(NA, l)
+R<-rep(NA, l)
+SAS<-rep(NA, l)
+SQL<-rep(NA, l)
+Java<-rep(NA,l)
+Tableau<-rep(NA, l)
+Spark<-rep(NA, l)
+C<-rep(NA, l)
+Perl<-rep(NA, l)
+Excel<-rep(NA, l)
+
+
+#lapply(url.1, function(url.1) {
+  #fields <- url.1 %>% read_html() %>% html_nodes(xpath='//*[contains(concat( " ", @class, " " ), concat( " ", "jl", " " ))]')
+ #job.urls <- fields%>% html_nodes("a.jobLink") %>% html_attr("href")
+ #job.urls <-job.urls[c(seq(1,60,by=2))]
+#job.urls = unique(paste('https://www.glassdoor.com', job.urls, sep = ''))
+#}
+#)
+#subpage=unlist(subpage.2,recursive = FALSE)
+#subpage<- ifelse(grepl("NA",subpage)==TRUE,NA,subpage)
+
+
+
+
+
+
+
 
 #collect company name, location sector and techniques(Python,R,SAS,SQL,Java,Tableau,Spark,C++,Perl,Excel)
 for(j in 1:length(subpage)){
-    subpage.1=subpage[j]
-    job <- html_session(subpage.1)
-      company[j] <- job %>%read_html() %>% html_node(".padRtSm") %>% html_text()
+   subpage.1=subpage[j]
+   job <- html_session(subpage.1)
+  tem<- tryCatch({job %>%read_html()%>% html_text())
+   company[j] <- job %>%read_html() %>% html_node(".padRtSm") %>% html_text()
       location[j]<- job %>% html_node(".subtle") %>% html_text()
-  desc.1 <-subpage.1 %>% readLines(warn=FALSE)
-    industry.1<- desc.1[str_detect(desc.1, "\'sector\'")] %>%
-      str_extract("\"(.*)\"") %>% str_sub(2, -2)
-    industry.1=unlist(industry.1,recursive = FALSE) 
-  industry.1=ifelse(length(industry.1)==0,NA,industry.1)
-    industry[j]=industry.1
-desc <- job %>% read_html() %>% html_nodes("#JobDescContainer") %>% html_text() 
+ 
+desc <- job %>% read_html() %>% html_nodes("#JobDescContainer") %>% html_text()
   Python[j] <- any(grepl("python", desc, ignore.case=TRUE))
   R[j] <- any(grepl("\\bR\\b", desc, ignore.case=TRUE))
   SAS[j] <- any(grepl("\\bSAS\\b", desc, ignore.case=TRUE))
@@ -75,7 +95,9 @@ desc <- job %>% read_html() %>% html_nodes("#JobDescContainer") %>% html_text()
    C[j]<- any(grepl("\\bC\\b", desc, ignore.case=TRUE))
    Perl[j] <- any(grepl("\\bPerl\\b", desc, ignore.case=TRUE))
    Excel[j] <- any(grepl("\\bExcel\\b", desc, ignore.case=TRUE))
-}
+   Sys.sleep(1)
+   }      
+
 location<-str_sub(location,-2,-1)
 
 data <- data.frame("Company" = company, "Location"=location, "Industry"=industry, "Python"=Python, "R"=R,"SAS"=SAS,"SQL"=SQL,"Java"=Java,"Tableau"=Tableau,"Spark"=Spark,"C"=C,"Perl"=Perl,"Excel"=Excel)
