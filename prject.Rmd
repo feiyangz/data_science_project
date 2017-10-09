@@ -1,0 +1,31 @@
+---
+title: "Data Science Project"
+output: html_document
+---
+
+\title{%
+  Data Science Project \\
+ 
+ \author{Feiyang Zheng}
+
+\textbf{Introduction}
+
+Data scientists are currently in high demand. Based on the estimation of McKinsey, "US will be facing a shortage of 140000 to 190000 data scientists by 2018"(1). This is because of the broadly use of data The Economist magazine even claims that "The World's most valuable resource is no longer oil, but data"(2). Because of Internet and smartphone, data, a collection of information, becomes so abundant in our world. No matter when we are watching TVs, accepting health service or even driving a car, almost all the activities that we have can be collected by electronic device, and represented in digital format. Therefore, data scientists, someone who have mathematics, computer science or statistics backgrounds, collect and transfer information in a more meaningful manner. After deep learning and analysis using appropriate methods, they play a huge role in helping the companies make crucial decisions. 
+The abundance of data benefits many types of industry. For example, to improve the effency of fullorder, Amazon links with manufacturers. By tracking their inventory, Amazon would be able to select warehouse closest to the vendor and/or customer, which reduce shipping cost by 10% to 40% (McMillan). Costomers also take advantages of the harness of data. By collecting more data, companies have a better scope about how to improve their products or service to attract more costumers, which results in even more data. 
+In order to help candidates who are interested in data scientist position better prepare for the position, in this project, we performed an analysis of “data scientist” jobs listed on job boards and on the employment pages of major companies. We aimed to find the most common skills that employers look for and the types of companies that employ the most data scientists.  
+
+\textbf{Method}
+
+
+
+
+
+
+
+
+
+1.https://hbr.org/2014/11/retaining-your-data-scientists
+2.https://www.economist.com/news/leaders/21721656-data-economy-demands-new-approach-antitrust-rules-worlds-most-valuable-resource
+
+
+3.http://oldwebsite.motifworks.com/how-big-data-analytics-can-benefit-supply-chain-logistics-industry-part-2/
