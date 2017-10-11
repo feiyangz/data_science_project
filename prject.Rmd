@@ -1,6 +1,8 @@
 ---
 title: "Data Science Project"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 \title{%
@@ -10,11 +12,34 @@ output: html_document
 
 \textbf{Introduction}
 
-Data scientists are currently in high demand. Based on the estimation of McKinsey, "US will be facing a shortage of 140000 to 190000 data scientists by 2018"(1). This is because of the broadly use of data The Economist magazine even claims that "The World's most valuable resource is no longer oil, but data"(2). Because of Internet and smartphone, data, a collection of information, becomes so abundant in our world. No matter when we are watching TVs, accepting health service or even driving a car, almost all the activities that we have can be collected by electronic device, and represented in digital format. Therefore, data scientists, someone who have mathematics, computer science or statistics backgrounds, collect and transfer information in a more meaningful manner. After deep learning and analysis using appropriate methods, they play a huge role in helping the companies make crucial decisions. 
-The abundance of data benefits many types of industry. For example, to improve the effency of fullorder, Amazon links with manufacturers. By tracking their inventory, Amazon would be able to select warehouse closest to the vendor and/or customer, which reduce shipping cost by 10% to 40% (McMillan). Costomers also take advantages of the harness of data. By collecting more data, companies have a better scope about how to improve their products or service to attract more costumers, which results in even more data. 
+Data scientists are currently in high demand. Based on the estimation of McKinsey, "US will be facing a shortage of 140000 to 190000 data scientists by 2018"(1). This is because of the wide use of data. The Economist magazine even claims that "The World's most valuable resource is no longer oil, but data"(2). Because of Internet and smartphone, data, a collection of information, become so abundant in our world. No matter when we are watching TV, accepting health service or even driving a car, almost all the activities that we have can be collected by electronic device and represented in digital format. Therefore, Data scientists, someone who collects interpret, and transfer complex data in a more meaningful manner after complex analysis play a huge role in helping the companies make crucial decisions.    
+The abundance of data benefits many types of industry. For example, to improve the efficiency of full order, Amazon links with manufacturers. By tracking their inventory, Amazon would be able to select warehouse closest to the vendor and/or customer, which reduce shipping cost by 10% to 40% (McMillan). Customers also take advantages of the harness of data. By collecting more data, companies have a better scope about how to improve their products or service to attract more customers, which results in better products at a lower price.
 In order to help candidates who are interested in data scientist position better prepare for the position, in this project, we performed an analysis of “data scientist” jobs listed on job boards and on the employment pages of major companies. We aimed to find the most common skills that employers look for and the types of companies that employ the most data scientists.  
 
+
 \textbf{Method}
+
+Web Scraping
+The job search engine that we select is Glassdoor, which is a widely used recruitment tool for job seekers to search potential employees. Glassdoor provides fresh data, which means that the job positions are always updated to the latest date. Another reason to select Glassdoor is that it not only contains detailed information about a position but also provides relevant information about the corresponding company such as salary information, company reviews, and company type. Last, the URLs of different pages in Glassdoor have a common pattern.  To be more specific, after we modify the first page, the list of URLs could bring us to all the position pages.
+
+Web Scraping is the first and one of the most important steps in this project for the purpose of gathering data. The main tool here is SelectorGadget, an open source Chrome extension that makes CSS selector generation and discovery on complicated sites. The basic package used in R is rvest, which extracts attributes, text and tag name from HTML. 
+1.	Search "Data Scientist" position on Glassdoor website and obtained the URLs from each page. 
+2.	Select each position using SelectorGadget and collect "XPath". Within each position, extract pieces out of HTML documents that we are interested lies in. "html_node" identifies nodes on the web page and return the HTML element. "html_text" presents the information in the text format. We also use this method to extract a list of links to positions from URLs by "html_attr".
+3.	Create a list of 13 most popular technical skills of data scientist.  These technique skills include Python, R, SAS, SQL, Java, Tableau, Spark, C, Perl, Excel, Hadoop, NoSQL and HBase.
+4.	Use "readline" and the same procedure in step 3 looping through the list of the linking URLs, which returns location, company’s name as well as industry type. For skills, "grepl" is used.  If the "job description" section contains the skill, it outputs true, otherwise, it outputs false. The error handling function is "tryCatch". It returns NA when functions generate warnings or errors and skip to the next iteration.
+
+Data 
+In our dataset, the positions' features we collect are company’s name, location, industry, rating, maximum and minimum salary. There are 13 technique skills including Python, R, SAS, SQL, Java, Tableau, Spark, C, Perl, Excel, Hadoop, NoSQL and HBase. I also seperate the salary into maximum and minimum salaries and calculate the mean. 
+
+After extracting positions from first 35 pages, we obtain 990 positions. Because some companies publish the same position multiple times, we remove 173 duplicated jobs. For the 817 unique positions, 102 of these miss company’ names while 78 positions miss maximum or minimum salary information. 41 positions do not contain rating of its corresponding company and 79 positions miss industry type. In terms of location, I also treat location labeled "remote" and "United States" as missing value besides NA (21). Moreover, there are 13 jobs lack any of the 13 technical skills.
+Overall, I exclude jobs that are absent of information of location, salary, industry and skills and end up with 639 non-missing positions. 
+
+\textbf{Result}
+
+Exploratory analysis
+Figure 1 is the bar plot in terms of the top technical skills of data scientist in the US. As we can see, the top five most common skills are Python, R, SQL followed by Hadoop and Spark.
+
+
 
 
 
